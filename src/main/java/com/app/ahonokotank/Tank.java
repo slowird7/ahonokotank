@@ -12,6 +12,7 @@ import java.util.TimerTask;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import java.util.Timer;
+import javafx.application.Platform;
 /**
  *
  * @author otsuka
@@ -54,18 +55,96 @@ public class Tank {
         return (INSTANCE.GetKeyState(key) & 0x8000) == 0x8000;
     };
 
-    public void forward() {
+    public boolean isForwardOK() {
         Tank newPos = new Tank(this);
-        
+        switch(td) {
+            case NORTH: newPos.ty--;break;
+            case EAST : newPos.tx++;break;
+            case SOUTH: newPos.ty++;break;
+            case WEST : newPos.tx--;break;
+        }
+        return FXMLController.INSTANCE.isLocateOK(newPos);
     }
     
-    public void backward() {
+    public boolean isBackwardOK() {
+        Tank newPos = new Tank(this);
+        switch(td) {
+            case NORTH: newPos.ty++; break;
+            case EAST : newPos.tx--; break;
+            case SOUTH: newPos.ty--; break;
+            case WEST : newPos.tx++; break;
+        }
+        return FXMLController.INSTANCE.isLocateOK(newPos);
+    }
+    
+    public boolean isTurnLeftOK() {
+        Tank newPos = new Tank(this);
+        switch(td) {
+            case NORTH: newPos.td = DIRECTION.WEST;  break;
+            case EAST : newPos.td = DIRECTION.NORTH; break;
+            case SOUTH: newPos.td = DIRECTION.EAST;  break;
+            case WEST : newPos.td = DIRECTION.SOUTH; break;
+        }
+        return FXMLController.INSTANCE.isLocateOK(newPos);
+    }
+    
+    public boolean isTurnRightOK() {
+        Tank newPos = new Tank(this);
+        switch(td) {
+            case NORTH: newPos.td = DIRECTION.EAST;  break;
+            case EAST : newPos.td = DIRECTION.SOUTH; break;
+            case SOUTH: newPos.td = DIRECTION.WEST;  break;
+            case WEST : newPos.td = DIRECTION.NORTH; break;
+        }
+        return FXMLController.INSTANCE.isLocateOK(newPos);
+    }
+    
+    public void moveForward() {
+        switch(td) {
+            case NORTH: this.ty--;break;
+            case EAST : this.tx++;break;
+            case SOUTH: this.ty++;break;
+            case WEST : this.tx--;break;
+        }
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.plotTank(this);
+        });
+    }
+    
+    public void moveBackward() {
+        switch(td) {
+            case NORTH: this.ty++;break;
+            case EAST : this.tx--;break;
+            case SOUTH: this.ty--;break;
+            case WEST : this.tx++;break;
+        }
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.plotTank(this);
+        });
     }
     
     public void turnLeft() {
+        switch(td) {
+            case NORTH: this.td = DIRECTION.WEST;  break;
+            case EAST : this.td = DIRECTION.NORTH; break;
+            case SOUTH: this.td = DIRECTION.EAST;  break;
+            case WEST : this.td = DIRECTION.SOUTH; break;
+        }
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.plotTank(this);
+        });
     }
     
     public void turnRight() {
+        switch(td) {
+            case NORTH: this.td = DIRECTION.EAST;  break;
+            case EAST : this.td = DIRECTION.SOUTH; break;
+            case SOUTH: this.td = DIRECTION.WEST;  break;
+            case WEST : this.td = DIRECTION.NORTH; break;
+        }
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.plotTank(this);
+        });
     }
     
     void startController() {
@@ -78,13 +157,13 @@ public class Tank {
             public void run() {
                 int x = random.nextInt(100);
                 if(x < 40) {
-                    forward();
+                    if (isForwardOK()) moveForward();
                 } else if (x < 70) {
-                    backward();
+                    if (isBackwardOK()) moveBackward();
                 } else if (x < 85) {
-                    turnLeft();
+                    if(isTurnLeftOK()) turnLeft();
                 } else {
-                    turnRight();
+                    if (isTurnRightOK()) turnRight();
                 }
             }
         };

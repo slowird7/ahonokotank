@@ -75,6 +75,7 @@ public class FXMLController implements Initializable {
     private void onBtnStart(ActionEvent event) {
         tank1.init();
         plotTank(tank1);
+        tank1.startController();
     }
 
     @Override
@@ -119,7 +120,7 @@ public class FXMLController implements Initializable {
     }
     
     public boolean isLocateOK(Tank tank) throws IllegalArgumentException {
-        if (!cell[tank.ty][tank.tx].getText().equals("　")) {
+        if (!cell[tank.ty][tank.tx].getText().equals("　") && !cell[tank.ty][tank.tx].getText().equals("〇")  && !cell[tank.ty][tank.tx].getText().equals("｜")  && !cell[tank.ty][tank.tx].getText().equals("―")) {
             return false;
         }
         switch (tank.td) {
