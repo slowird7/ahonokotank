@@ -21,43 +21,51 @@ public class FXMLController implements Initializable {
     public static final int mapSize = 10;
 
     public static FXMLController INSTANCE;
-    
+
     public enum DIRECTION {
         NORTH(0),
         EAST(1),
         SOUTH(2),
         WEST(3);
 
-	private final int code;
+        private final int code;
 
-	private DIRECTION(int code) {
+        private DIRECTION(int code) {
             this.code = code;
-	}
+        }
 
-	int getCode() {
-		return code;
-	}
-        
+        int getCode() {
+            return code;
+        }
+
         public DIRECTION toLeft(DIRECTION dir) {
             switch (dir) {
-                case NORTH: return WEST;
-                case EAST:  return NORTH;
-                case SOUTH: return EAST;
-                case WEST:  return SOUTH;
+                case NORTH:
+                    return WEST;
+                case EAST:
+                    return NORTH;
+                case SOUTH:
+                    return EAST;
+                case WEST:
+                    return SOUTH;
             }
             return null;
         }
-        
+
         public DIRECTION toRight(DIRECTION dir) {
             switch (dir) {
-                case NORTH: return EAST;
-                case EAST:  return SOUTH;
-                case SOUTH: return WEST;
-                case WEST:  return NORTH;
+                case NORTH:
+                    return EAST;
+                case EAST:
+                    return SOUTH;
+                case SOUTH:
+                    return WEST;
+                case WEST:
+                    return NORTH;
             }
             return null;
         }
-        
+
     }
 
     public int columns = 0, rows = 0;
@@ -68,6 +76,7 @@ public class FXMLController implements Initializable {
     private GridPane theMap;
 
     private Label cell[][];
+    private char map[][];
 
     private Tank tank1;
 
@@ -75,6 +84,11 @@ public class FXMLController implements Initializable {
     private void onBtnStart(ActionEvent event) {
         tank1.init();
         plotTank(tank1);
+        theMap.getScene().getWindow().showingProperty().addListener((observable, oldValue, newValue) -> {
+            if (oldValue == true && newValue == false) {
+                tank1.terminate();
+            }
+        });
         tank1.startController();
     }
 
@@ -92,11 +106,14 @@ public class FXMLController implements Initializable {
             String line;
             while ((line = br.readLine()) != null) {
                 rows++;
-                if (columns < line.length()) columns = line.length();
+                if (columns < line.length()) {
+                    columns = line.length();
+                }
             }
             cell = new Label[rows][columns];
+            map = new char[rows][columns];
         } catch (IOException ex) {
-            new Alert(Alert.AlertType.WARNING, "map file not found. [" + mapName+ "]", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.WARNING, "map file not found. [" + mapName + "]", ButtonType.OK).showAndWait();
         }
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
@@ -104,7 +121,8 @@ public class FXMLController implements Initializable {
             while ((line = br.readLine()) != null) {
                 yy++;
                 for (int xx = 0; xx < line.length(); xx++) {
-                    cell[yy][xx] =  new Label(String.valueOf(line.charAt(xx)));
+                    map[yy][xx] = line.charAt(xx);
+                    cell[yy][xx] = new Label(String.valueOf(line.charAt(xx)));
                     cell[yy][xx].setVisible(true);
                     cell[yy][xx].setFont(new Font("system", 22));
                     cell[yy][xx].setEllipsisString("");
@@ -113,35 +131,68 @@ public class FXMLController implements Initializable {
                     theMap.getChildren().add(cell[yy][xx]);
                 }
             }
-           
+
         } catch (IOException ex) {
-            new Alert(Alert.AlertType.WARNING, ex.getMessage()+ " [" + mapName+ "]", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.WARNING, ex.getMessage() + " [" + mapName + "]", ButtonType.OK).showAndWait();
         }
     }
-    
+
     public boolean isLocateOK(Tank tank) throws IllegalArgumentException {
-        if (!cell[tank.ty][tank.tx].getText().equals("　") && !cell[tank.ty][tank.tx].getText().equals("〇")  && !cell[tank.ty][tank.tx].getText().equals("｜")  && !cell[tank.ty][tank.tx].getText().equals("―")) {
+        if (map[tank.ty][tank.tx] != '　') {
             return false;
         }
         switch (tank.td) {
-            case NORTH: return cell[tank.ty - 1][tank.tx].getText().equals("　");
-            case EAST : return cell[tank.ty][tank.tx + 1].getText().equals("　");
-            case SOUTH: return cell[tank.ty + 1][tank.tx].getText().equals("　");
-            case WEST : return cell[tank.ty][tank.tx - 1].getText().equals("　");
+            case NORTH:
+                return map[tank.ty - 1][tank.tx] == '　';
+            case EAST:
+                return map[tank.ty][tank.tx + 1] == '　';
+            case SOUTH:
+                return map[tank.ty + 1][tank.tx] == '　';
+            case WEST:
+                return map[tank.ty][tank.tx - 1] == '　';
             default:
                 throw new IllegalArgumentException("unknown direction:" + tank.td);
         }
     }
-    
+
+    public void clearTank(Tank tank) throws IllegalArgumentException {
+        cell[tank.ty][tank.tx].setText("　");
+        switch (tank.td) {
+            case NORTH:
+                cell[tank.ty - 1][tank.tx].setText("　");
+                break;
+            case EAST:
+                cell[tank.ty][tank.tx + 1].setText("　");
+                break;
+            case SOUTH:
+                cell[tank.ty + 1][tank.tx].setText("　");
+                break;
+            case WEST:
+                cell[tank.ty][tank.tx - 1].setText("　");
+                break;
+            default:
+                throw new IllegalArgumentException("unknown direction:" + tank.td);
+        }
+    }
+
     public void plotTank(Tank tank) throws IllegalArgumentException {
         cell[tank.ty][tank.tx].setText("〇");
         switch (tank.td) {
-            case NORTH: cell[tank.ty - 1][tank.tx].setText("｜"); break;
-            case EAST : cell[tank.ty][tank.tx + 1].setText("―"); break;
-            case SOUTH: cell[tank.ty + 1][tank.tx].setText("｜"); break;
-            case WEST : cell[tank.ty][tank.tx - 1].setText("―"); break;
+            case NORTH:
+                cell[tank.ty - 1][tank.tx].setText("｜");
+                break;
+            case EAST:
+                cell[tank.ty][tank.tx + 1].setText("―");
+                break;
+            case SOUTH:
+                cell[tank.ty + 1][tank.tx].setText("｜");
+                break;
+            case WEST:
+                cell[tank.ty][tank.tx - 1].setText("―");
+                break;
             default:
                 throw new IllegalArgumentException("unknown direction:" + tank.td);
         }
     }
+
 }

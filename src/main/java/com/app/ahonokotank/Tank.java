@@ -99,7 +99,15 @@ public class Tank {
         return FXMLController.INSTANCE.isLocateOK(newPos);
     }
     
+    public void clear() {
+        
+    }
+
     public void moveForward() {
+        Tank current = new Tank(this);
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.clearTank(current);
+        });
         switch(td) {
             case NORTH: this.ty--;break;
             case EAST : this.tx++;break;
@@ -112,6 +120,10 @@ public class Tank {
     }
     
     public void moveBackward() {
+        Tank current = new Tank(this);
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.clearTank(current);
+        });
         switch(td) {
             case NORTH: this.ty++;break;
             case EAST : this.tx--;break;
@@ -124,6 +136,10 @@ public class Tank {
     }
     
     public void turnLeft() {
+        Tank current = new Tank(this);
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.clearTank(current);
+        });
         switch(td) {
             case NORTH: this.td = DIRECTION.WEST;  break;
             case EAST : this.td = DIRECTION.NORTH; break;
@@ -136,6 +152,10 @@ public class Tank {
     }
     
     public void turnRight() {
+        Tank current = new Tank(this);
+        Platform.runLater(()->{
+            FXMLController.INSTANCE.clearTank(current);
+        });
         switch(td) {
             case NORTH: this.td = DIRECTION.EAST;  break;
             case EAST : this.td = DIRECTION.SOUTH; break;
@@ -155,20 +175,25 @@ public class Tank {
 
             @Override
             public void run() {
+                clear();
                 int x = random.nextInt(100);
-                if(x < 40) {
+                if(x < 50) {
                     if (isForwardOK()) moveForward();
-                } else if (x < 70) {
+                } else if (x < 60) {
                     if (isBackwardOK()) moveBackward();
-                } else if (x < 85) {
+                } else if (x < 80) {
                     if(isTurnLeftOK()) turnLeft();
                 } else {
                     if (isTurnRightOK()) turnRight();
                 }
             }
         };
-
+        
         timer.scheduleAtFixedRate(task, 0, 500);
+    }
+    
+    public void terminate() {
+        timer.cancel();
     }
 
 }
