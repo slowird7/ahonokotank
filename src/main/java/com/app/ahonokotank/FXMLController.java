@@ -22,13 +22,12 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
+import java.awt.event.KeyEvent;
 
 public class FXMLController implements Initializable {
 
-    public static final int mapSize = 10;
-
     public static FXMLController INSTANCE;
-    private static int NO_OF_TANKS = 4;
+    private static int NO_OF_TANKS = 2;
 
     public enum DIRECTION {
         NORTH(0),
@@ -104,8 +103,17 @@ public class FXMLController implements Initializable {
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    for (int nn = 0; nn < NO_OF_TANKS; nn++) {
+                    for (int nn = 1; nn < NO_OF_TANKS; nn++) {
                         tank[nn].run();
+                    }
+                    if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
+                        tank[0].moveForward();
+                    } else if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_DOWN)) & 0x8000) == 0x8000) {
+                        tank[0].moveBackward();
+                    } else if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_LEFT)) & 0x8000) == 0x8000) {
+                        tank[0].turnLeft();
+                    } else if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_RIGHT)) & 0x8000) == 0x8000) {
+                        tank[0].turnRight();
                     }
                 }
             };
