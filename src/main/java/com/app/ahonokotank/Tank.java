@@ -6,11 +6,10 @@
 package com.app.ahonokotank;
 
 import com.app.ahonokotank.FXMLController.DIRECTION;
-import static com.app.ahonokotank.User32.INSTANCE;
+
 import java.util.Random;
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import javafx.application.Platform;
+
+import static com.app.ahonokotank.User32.INSTANCE;
 
 /**
  *
@@ -18,14 +17,23 @@ import javafx.application.Platform;
  */
 public class Tank {
 
+    public enum TANKSTATE {
+        OPERETED,
+        AUTORUN,
+        DESTRUCTED,
+    }
+    
+    private int id;
+    public TANKSTATE state; 
     public int tx, ty;
     public int mx, my;
     public DIRECTION td, md;
     public boolean inFight = false;
     private Random random;
 
-    public Tank() {
-
+    public Tank(int id, TANKSTATE state) {
+        this.id = id;
+        this.state = state;
     }
 
     public Tank(Tank tank) {
@@ -34,7 +42,7 @@ public class Tank {
         this.td = tank.td;
     }
 
-    void init() {
+    void initLocation() {
         random = new Random();
         td = DIRECTION.NORTH;
         while (!FXMLController.INSTANCE.isLocateOK(this)) {
@@ -99,7 +107,7 @@ public class Tank {
         return FXMLController.INSTANCE.turnRight(this);
     }
 
-    void run() {
+    void autoRun() {
         while (true) {
             int x = random.nextInt(100);
             if (x < 70 && isForwardOK()) {
@@ -120,4 +128,15 @@ public class Tank {
         }
     }
 
+    public void operate() {
+        if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
+            moveForward();
+        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_DOWN)) & 0x8000) == 0x8000) {
+            moveBackward();
+        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_LEFT)) & 0x8000) == 0x8000) {
+            turnLeft();
+        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_RIGHT)) & 0x8000) == 0x8000) {
+            turnRight();
+        }
+    }
 }

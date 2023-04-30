@@ -93,27 +93,24 @@ public class FXMLController implements Initializable {
     @FXML
     private void onBtnStart(ActionEvent event) {
         if (!isRunning.get()) {
+            btnRun.setText("stop");
             for (int nn = 0; nn < NO_OF_TANKS; nn++) {
-                tank[nn] = new Tank();
-                tank[nn].init();
+                tank[nn] = new Tank(nn, Tank.TANKSTATE.AUTORUN);
+                tank[nn].initLocation();
                 plotTank(tank[nn]);
             }
-            btnRun.setText("stop");
+            tank[0].state = Tank.TANKSTATE.OPERETED;
+
             timer = new Timer(false);
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    for (int nn = 1; nn < NO_OF_TANKS; nn++) {
-                        tank[nn].run();
-                    }
-                    if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
-                        tank[0].moveForward();
-                    } else if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_DOWN)) & 0x8000) == 0x8000) {
-                        tank[0].moveBackward();
-                    } else if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_LEFT)) & 0x8000) == 0x8000) {
-                        tank[0].turnLeft();
-                    } else if (((User32.INSTANCE.GetKeyState((short)java.awt.event.KeyEvent.VK_RIGHT)) & 0x8000) == 0x8000) {
-                        tank[0].turnRight();
+                    for (int nn = 0; nn < NO_OF_TANKS; nn++) {
+                        if (tank[nn].state == Tank.TANKSTATE.AUTORUN) {
+                            tank[nn].autoRun();
+                        } else if (tank[nn].state == Tank.TANKSTATE.OPERETED) {
+                            tank[nn].operate();
+                        }
                     }
                 }
             };
