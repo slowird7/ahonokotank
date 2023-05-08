@@ -16,11 +16,12 @@ import static com.app.ahonokotank.User32.INSTANCE;
 public class Tank extends MovingBody {
 
     public enum TANKSTATE {
-        OPERETED,
+        OPERATED,
         AUTORUN,
         DESTRUCTED,
     }
 
+    static final int TANK_SIZE = 1;
     private int id;
     public TANKSTATE state; 
     public boolean inFight = false;
@@ -29,7 +30,7 @@ public class Tank extends MovingBody {
     private Missile missile;
 
     public Tank(int id, BODYSTATE state) {
-        super(id, state, 2);
+        super(id, state, TANK_SIZE);
 //        this.missile = new Missile();
     }
 

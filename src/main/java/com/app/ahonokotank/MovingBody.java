@@ -5,8 +5,6 @@
  */
 package com.app.ahonokotank;
 
-import javafx.application.Platform;
-
 import static com.app.ahonokotank.Battlefield.DIRECTION.*;
 import static com.app.ahonokotank.User32.INSTANCE;
 
@@ -17,7 +15,7 @@ import static com.app.ahonokotank.User32.INSTANCE;
 public class MovingBody {
 
     public enum BODYSTATE {
-        OPERETED,
+        OPERATED,
         AUTORUN,
         DESTRUCTED,
     }

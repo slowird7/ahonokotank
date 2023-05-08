@@ -62,7 +62,7 @@ public class FXMLController implements Initializable {
                             FXMLhideMovingBody(tank);
                             if (tank.bodystate == MovingBody.BODYSTATE.AUTORUN) {
                                 tank.autoRun();
-                            } else if (tank.bodystate == MovingBody.BODYSTATE.OPERETED) {
+                            } else if (tank.bodystate == MovingBody.BODYSTATE.OPERATED) {
                                 tank.maneuver();
                             }
                             FXMLController.INSTANCE.FXMLplotTank(tank);
@@ -83,10 +83,12 @@ public class FXMLController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         loadMap("map.txt");
         tanks = new ArrayList<>();
+        // 自機生成
+        tanks.add(new Tank(0, MovingBody.BODYSTATE.OPERATED));
+        // NPC生成
         for (int id = 1; id < NO_OF_TANKS; id++) {
             tanks.add(new Tank(id, MovingBody.BODYSTATE.AUTORUN));
         }
-        tank = new Tank[NO_OF_TANKS];
         INSTANCE = this;
         isRunning = new SimpleBooleanProperty(false);
         Platform.runLater(() -> {
@@ -149,18 +151,19 @@ public class FXMLController implements Initializable {
         if (map[mb.ty][mb.tx] != '　') {
             return false;
         }
-        switch (mb.towardDir) {
-            case NORTH:
-                return map[mb.ty - 1][mb.tx] == '　';
-            case EAST:
-                return map[mb.ty][mb.tx + 1] == '　';
-            case SOUTH:
-                return map[mb.ty + 1][mb.tx] == '　';
-            case WEST:
-                return map[mb.ty][mb.tx - 1] == '　';
-            default:
-                throw new IllegalArgumentException("unknown direction:" + mb.towardDir);
-        }
+//        switch (mb.towardDir) {
+//            case NORTH:
+//                return map[mb.ty - 1][mb.tx] == '　';
+//            case EAST:
+//                return map[mb.ty][mb.tx + 1] == '　';
+//            case SOUTH:
+//                return map[mb.ty + 1][mb.tx] == '　';
+//            case WEST:
+//                return map[mb.ty][mb.tx - 1] == '　';
+//            default:
+//                throw new IllegalArgumentException("unknown direction:" + mb.towardDir);
+//        }
+        return true;
     }
 
     public void FXMLhideMovingBody(MovingBody mb) throws IllegalArgumentException {
@@ -185,19 +188,19 @@ public class FXMLController implements Initializable {
     }
 
     public void FXMLplotTank(Tank tank) throws IllegalArgumentException {
-        cell[tank.ty][tank.tx].setText("〇");
+//        cell[tank.ty][tank.tx].setText("〇");
         switch (tank.towardDir) {
             case NORTH:
-                cell[tank.ty - 1][tank.tx].setText("｜");
+                cell[tank.ty][tank.tx].setText("∩");
                 break;
             case EAST:
-                cell[tank.ty][tank.tx + 1].setText("―");
+                cell[tank.ty][tank.tx].setText("⊃");
                 break;
             case SOUTH:
-                cell[tank.ty + 1][tank.tx].setText("｜");
+                cell[tank.ty][tank.tx].setText("∪");
                 break;
             case WEST:
-                cell[tank.ty][tank.tx - 1].setText("―");
+                cell[tank.ty][tank.tx].setText("⊂");
                 break;
             default:
                 throw new IllegalArgumentException("unknown direction:" + tank.towardDir);
