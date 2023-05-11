@@ -5,6 +5,10 @@
  */
 package com.app.ahonokotank;
 
+import javafx.scene.paint.Color;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static com.app.ahonokotank.User32.INSTANCE;
@@ -14,6 +18,8 @@ import static com.app.ahonokotank.User32.INSTANCE;
  * @author otsuka
  */
 public class Tank extends MovingBody {
+
+    public static final List<Tank> tanks = new ArrayList<>();
 
     public enum TANKSTATE {
         OPERATED,
@@ -27,19 +33,25 @@ public class Tank extends MovingBody {
     public boolean inFight = false;
     private Random random;
 
-    private Missile missile;
+    public Missile missile;
+
+    private static Battlefield theBattlefield = Battlefield.getInstance();
+
+
+    static final Color colors[] = {Color.RED, Color.GREEN, Color.BLUE, Color.VIOLET, Color.YELLOW, Color.INDIGO, Color.ORANGE};
 
     public Tank(int id, BODYSTATE state) {
         super(id, state, TANK_SIZE);
 //        this.missile = new Missile();
+        color = colors[id % 7];
     }
 
     void initLocation() {
         random = new Random();
         towardDir = Battlefield.DIRECTION.NORTH;
-        while (!FXMLController.INSTANCE.isLocateOK(this)) {
-            tx = random.nextInt(FXMLController.INSTANCE.columns);
-            ty = random.nextInt(FXMLController.INSTANCE.rows);
+        while (!theBattlefield.isLocateOK(ty, tx)) {
+            tx = random.nextInt(theBattlefield.getColumns());
+            ty = random.nextInt(theBattlefield.getRows());
             switch (random.nextInt(3)) {
                 case 0:
                     towardDir = Battlefield.DIRECTION.NORTH;
@@ -86,6 +98,9 @@ public class Tank extends MovingBody {
                 break;
             }
         }
+        if (!inFight && random.nextInt(100) > 50) {
+            launchMissile();
+        }
     }
 
     public void operate() {
@@ -98,5 +113,10 @@ public class Tank extends MovingBody {
         } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_RIGHT)) & 0x8000) == 0x8000) {
             turnRight();
         }
+    }
+
+    private void launchMissile() {
+        inFight = true;
+        missile = new Missile(this);
     }
 }

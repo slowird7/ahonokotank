@@ -22,27 +22,28 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 
+import static com.app.ahonokotank.Missile.missiles;
+import static com.app.ahonokotank.Tank.tanks;
+
 public class FXMLController implements Initializable {
 
     public static FXMLController INSTANCE;
-    private static int NO_OF_TANKS = 8;
+    private static int NO_OF_TANKS = 3;
 
 
-    public int columns = 0, rows = 0;
 
-    private List<Tank> tanks;
     @FXML
     private Button btnRun;
     @FXML
     private GridPane theMap;
 
     private Label cell[][];
-    private char map[][];
 
-    private Tank[] tank;
     private BooleanProperty isRunning;
 
     private Timer timer;
+
+    private Battlefield theBattlefield;
 
     @FXML
     private void onBtnStart(ActionEvent event) {
@@ -50,24 +51,46 @@ public class FXMLController implements Initializable {
             btnRun.setText("stop");
             for (Tank tank : tanks) {
                 tank.initLocation();
-                FXMLplotTank(tank);
+                FXMLPlotTank(tank);
             }
 
             timer = new Timer(false);
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    for (Tank tank : tanks) {
-                        Platform.runLater(()-> {
+                    Platform.runLater(()-> {
+                        for (Tank tank : tanks) {
                             FXMLhideMovingBody(tank);
+                        }
+                        for (Missile missile : missiles) {
+                            FXMLhideMovingBody(missile);
+                        }
+
+                        for (Tank tank : tanks) {
                             if (tank.bodystate == MovingBody.BODYSTATE.AUTORUN) {
                                 tank.autoRun();
                             } else if (tank.bodystate == MovingBody.BODYSTATE.OPERATED) {
                                 tank.maneuver();
                             }
-                            FXMLController.INSTANCE.FXMLplotTank(tank);
-                        });
-                    }
+                            FXMLController.INSTANCE.FXMLPlotTank(tank);
+                        }
+                        for (int i = 0; i < missiles.size(); i++) {
+                            Missile missile = missiles.get(i);
+                            missile.fly();
+                            if (missile.ty < 0 || missile.ty >= theBattlefield.getRows() || missile.tx < 0 || missile.tx >= theBattlefield.getColumns() || theBattlefield.getCell(missile.ty, missile.tx) == '■') {
+                                missiles.remove(missile);
+                                missile.getOwner().inFight = false;
+                                missile.getOwner().missile = null;
+                            }
+                        }
+                        for (Tank tank : tanks) {
+                            FXMLPlotTank(tank);
+                        }
+                        for (Missile missile : missiles) {
+                            FXMLPlotMissile(missile);
+                        }
+                    });
+
                 }
             };
 
@@ -81,8 +104,8 @@ public class FXMLController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        theBattlefield = Battlefield.getInstance();
         loadMap("map.txt");
-        tanks = new ArrayList<>();
         // 自機生成
         tanks.add(new Tank(0, MovingBody.BODYSTATE.OPERATED));
         // NPC生成
@@ -105,66 +128,29 @@ public class FXMLController implements Initializable {
     }
 
     private void loadMap(String mapName) {
+        theBattlefield.loadMap(mapName);
         theMap.getRowConstraints().clear();
         theMap.getColumnConstraints().clear();
-        File file = new File(mapName);
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                rows++;
-                theMap.getRowConstraints().add(new RowConstraints(30));
-                if (columns < line.length()) {
-                    columns = line.length();
-                }
-            }
-            cell = new Label[rows][columns];
-            map = new char[rows][columns];
-            for (int xx = 0; xx < columns; xx++) {
-                theMap.getColumnConstraints().add(new ColumnConstraints(30));
-            }
-        } catch (IOException ex) {
-            new Alert(Alert.AlertType.WARNING, "map file not found. [" + mapName + "]", ButtonType.OK).showAndWait();
+        for (int ii = 0; ii < theBattlefield.getRows(); ii++) {
+            theMap.getRowConstraints().add(new RowConstraints(30));
         }
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            int yy = -1;
-            while ((line = br.readLine()) != null) {
-                yy++;
-                for (int xx = 0; xx < line.length(); xx++) {
-                    map[yy][xx] = line.charAt(xx);
-                    cell[yy][xx] = new Label(String.valueOf(line.charAt(xx)));
-                    cell[yy][xx].setVisible(true);
-                    cell[yy][xx].setFont(new Font("system", 22));
-                    cell[yy][xx].setEllipsisString("");
-                    theMap.getChildren().add(cell[yy][xx]);
-                    theMap.setRowIndex(cell[yy][xx], yy);
-                    theMap.setColumnIndex(cell[yy][xx], xx);
-                }
+        for (int jj = 0; jj < theBattlefield.getColumns(); jj++) {
+            theMap.getColumnConstraints().add(new ColumnConstraints(30));
+        }
+            cell = new Label[theBattlefield.getRows()][theBattlefield.getColumns()];
+        for (int yy = 0; yy < theBattlefield.getRows(); yy++) {
+            for (int xx = 0; xx < theBattlefield.getColumns(); xx++) {
+                cell[yy][xx] = new Label(String.valueOf(theBattlefield.getCell(yy ,xx)));
+                cell[yy][xx].setVisible(true);
+                cell[yy][xx].setFont(new Font("system", 28));
+                cell[yy][xx].setEllipsisString("");
+                theMap.getChildren().add(cell[yy][xx]);
+                theMap.setRowIndex(cell[yy][xx], yy);
+                theMap.setColumnIndex(cell[yy][xx], xx);
             }
-
-        } catch (IOException ex) {
-            new Alert(Alert.AlertType.WARNING, ex.getMessage() + " [" + mapName + "]", ButtonType.OK).showAndWait();
         }
     }
 
-    public boolean isLocateOK(MovingBody mb) throws IllegalArgumentException {
-        if (map[mb.ty][mb.tx] != '　') {
-            return false;
-        }
-//        switch (mb.towardDir) {
-//            case NORTH:
-//                return map[mb.ty - 1][mb.tx] == '　';
-//            case EAST:
-//                return map[mb.ty][mb.tx + 1] == '　';
-//            case SOUTH:
-//                return map[mb.ty + 1][mb.tx] == '　';
-//            case WEST:
-//                return map[mb.ty][mb.tx - 1] == '　';
-//            default:
-//                throw new IllegalArgumentException("unknown direction:" + mb.towardDir);
-//        }
-        return true;
-    }
 
     public void FXMLhideMovingBody(MovingBody mb) throws IllegalArgumentException {
         for (int partNo = 0; partNo < mb.size; partNo++) {
@@ -187,7 +173,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    public void FXMLplotTank(Tank tank) throws IllegalArgumentException {
+    public void FXMLPlotTank(Tank tank) throws IllegalArgumentException {
 //        cell[tank.ty][tank.tx].setText("〇");
         switch (tank.towardDir) {
             case NORTH:
@@ -205,6 +191,28 @@ public class FXMLController implements Initializable {
             default:
                 throw new IllegalArgumentException("unknown direction:" + tank.towardDir);
         }
+        cell[tank.ty][tank.tx].setTextFill(tank.color);
+    }
+
+    public void FXMLPlotMissile(Missile missile) throws IllegalArgumentException {
+//        cell[tank.ty][tank.tx].setText("〇");
+        switch (missile.getOwner().towardDir) {
+            case NORTH:
+                cell[missile.ty][missile.tx].setText("↑");
+                break;
+            case EAST:
+                cell[missile.ty][missile.tx].setText("→");
+                break;
+            case SOUTH:
+                cell[missile.ty][missile.tx].setText("↓");
+                break;
+            case WEST:
+                cell[missile.ty][missile.tx].setText("←");
+                break;
+            default:
+                throw new IllegalArgumentException("unknown direction:" + missile.towardDir);
+        }
+        cell[missile.ty][missile.tx].setTextFill(missile.color);
     }
 
 

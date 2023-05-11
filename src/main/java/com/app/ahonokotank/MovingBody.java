@@ -5,6 +5,8 @@
  */
 package com.app.ahonokotank;
 
+import javafx.scene.paint.Color;
+
 import static com.app.ahonokotank.Battlefield.DIRECTION.*;
 import static com.app.ahonokotank.User32.INSTANCE;
 
@@ -25,6 +27,8 @@ public class MovingBody {
     public int tx, ty;
     public Battlefield.DIRECTION towardDir, md;
     public int size;
+    public Color color;
+    private static Battlefield theBattlefield = Battlefield.getInstance();
 
 
     public MovingBody(int id, BODYSTATE bodystate, int size) {
@@ -69,7 +73,7 @@ public class MovingBody {
                 newPos.tx--;
                 break;
         }
-        return FXMLController.INSTANCE.isLocateOK(newPos);
+        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
     }
 
     public boolean isBackwardOK() {
@@ -88,7 +92,7 @@ public class MovingBody {
                 newPos.tx++;
                 break;
         }
-        return FXMLController.INSTANCE.isLocateOK(newPos);
+        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
     }
 
     public boolean isTurnLeftOK() {
@@ -107,7 +111,7 @@ public class MovingBody {
                 newPos.towardDir = Battlefield.DIRECTION.SOUTH;
                 break;
         }
-        return FXMLController.INSTANCE.isLocateOK(newPos);
+        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
     }
 
     public boolean isTurnRightOK() {
@@ -126,7 +130,7 @@ public class MovingBody {
                 newPos.towardDir = Battlefield.DIRECTION.NORTH;
                 break;
         }
-        return FXMLController.INSTANCE.isLocateOK(newPos);
+        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
     }
 
     public boolean moveForward() {
