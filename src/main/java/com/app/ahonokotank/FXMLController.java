@@ -30,6 +30,8 @@ public class FXMLController implements Initializable {
     public static FXMLController INSTANCE;
     private static int NO_OF_TANKS = 3;
 
+    int turn = 0;
+    final int CYCLE = 2;
 
 
     @FXML
@@ -48,6 +50,7 @@ public class FXMLController implements Initializable {
     @FXML
     private void onBtnStart(ActionEvent event) {
         if (!isRunning.get()) {
+            turn = 0;
             btnRun.setText("stop");
             for (Tank tank : tanks) {
                 tank.initLocation();
@@ -58,43 +61,55 @@ public class FXMLController implements Initializable {
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    Platform.runLater(()-> {
-                        for (Tank tank : tanks) {
-                            FXMLhideMovingBody(tank);
-                        }
+                    if (turn == 0) {
+                        Platform.runLater(() -> {
+                            for (Tank tank : tanks) {
+                                FXMLhideMovingBody(tank);
+                            }
+
+                            for (Tank tank : tanks) {
+                                if (tank.bodystate == MovingBody.BODYSTATE.AUTORUN) {
+                                    tank.autoRun();
+                                } else if (tank.bodystate == MovingBody.BODYSTATE.OPERATED) {
+                                    tank.maneuver();
+                                }
+                                FXMLController.INSTANCE.FXMLPlotTank(tank);
+                            }
+                        });
+                    }
+
+                    Platform.runLater(() -> {
                         for (Missile missile : missiles) {
                             FXMLhideMovingBody(missile);
-                        }
-
-                        for (Tank tank : tanks) {
-                            if (tank.bodystate == MovingBody.BODYSTATE.AUTORUN) {
-                                tank.autoRun();
-                            } else if (tank.bodystate == MovingBody.BODYSTATE.OPERATED) {
-                                tank.maneuver();
-                            }
-                            FXMLController.INSTANCE.FXMLPlotTank(tank);
                         }
                         for (int i = 0; i < missiles.size(); i++) {
                             Missile missile = missiles.get(i);
                             missile.fly();
-                            if (missile.ty < 0 || missile.ty >= theBattlefield.getRows() || missile.tx < 0 || missile.tx >= theBattlefield.getColumns() || theBattlefield.getCell(missile.ty, missile.tx) == '■') {
+//                            if (missile.ty < 0 || missile.ty >= theBattlefield.getRows() || missile.tx < 0 || missile.tx >= theBattlefield.getColumns() || theBattlefield.getCell(missile.ty, missile.tx) == '■') {
+                            if (theBattlefield.getCell(missile.ty, missile.tx) == '■' || theBattlefield.getCell(missile.ty, missile.tx) == ) {
                                 missiles.remove(missile);
                                 missile.getOwner().inFight = false;
                                 missile.getOwner().missile = null;
                             }
-                        }
-                        for (Tank tank : tanks) {
-                            FXMLPlotTank(tank);
                         }
                         for (Missile missile : missiles) {
                             FXMLPlotMissile(missile);
                         }
                     });
 
+                    if (turn == 0) {
+                        Platform.runLater(() -> {
+                            for (Tank tank : tanks) {
+                                FXMLPlotTank(tank);
+                            }
+                        });
+                    }
+
+                    turn = (turn + 1) % CYCLE;
                 }
             };
 
-            timer.scheduleAtFixedRate(task, 0, 500);
+            timer.scheduleAtFixedRate(task, 0, 200);
         } else {
             timer.cancel();
             btnRun.setText("start");

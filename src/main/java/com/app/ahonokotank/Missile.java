@@ -8,6 +8,7 @@ public class Missile extends MovingBody {
     public static List<Missile> missiles = new ArrayList<>();
 
     private Tank owner;
+    private final int SPEED = 1;
 
     public Missile(Tank owner) {
         super(0, BODYSTATE.OPERATED, 1);
@@ -32,10 +33,10 @@ public class Missile extends MovingBody {
 
     public void fly() {
         switch (owner.towardDir) {
-            case NORTH -> { ty = ty - 2; }
-            case EAST  -> { tx = tx + 2; }
-            case SOUTH -> { ty = ty + 2; }
-            case WEST  -> { tx = tx - 2; }
+            case NORTH -> { ty = ty - SPEED; }
+            case EAST  -> { tx = tx + SPEED; }
+            case SOUTH -> { ty = ty + SPEED; }
+            case WEST  -> { tx = tx - SPEED; }
             default    -> { throw new IllegalArgumentException("Unknown direction"); }
         }
     }

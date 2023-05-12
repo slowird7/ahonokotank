@@ -98,7 +98,7 @@ public class Tank extends MovingBody {
                 break;
             }
         }
-        if (!inFight && random.nextInt(100) > 50) {
+        if (!inFight && random.nextInt(100) > 80) {
             launchMissile();
         }
     }
