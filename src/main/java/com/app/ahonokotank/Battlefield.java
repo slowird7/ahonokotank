@@ -2,10 +2,6 @@ package com.app.ahonokotank;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.text.Font;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -99,24 +95,23 @@ public class Battlefield {
         }
     }
 
-    public boolean isLocateOK(int row, int column) throws IllegalArgumentException {
+    public boolean isEmpty(int row, int column) throws IllegalArgumentException {
         if (row < 0 || row >= rows || column < 0 || column >= columns) return false;
-        if (getCell(row, column) != '　') {
-            return false;
-        }
-//        switch (mb.towardDir) {
-//            case NORTH:
-//                return map[mb.ty - 1][mb.tx] == '　';
-//            case EAST:
-//                return map[mb.ty][mb.tx + 1] == '　';
-//            case SOUTH:
-//                return map[mb.ty + 1][mb.tx] == '　';
-//            case WEST:
-//                return map[mb.ty][mb.tx - 1] == '　';
-//            default:
-//                throw new IllegalArgumentException("unknown direction:" + mb.towardDir);
-//        }
-        return true;
+        return (getCell(row, column) == '　');
+    }
+
+    public void clear(int row, int column) throws IllegalArgumentException {
+        if (row < 0 || row >= rows || column < 0 || column >= columns || map[row][column] == '　') {
+            throw new IllegalArgumentException("");
+        };
+        map[row][column] = '　';
+    }
+
+    public void locate(int row, int column, char type) throws IllegalArgumentException {
+        if (row < 0 || row >= rows || column < 0 || column >= columns || map[row][column] != '　') {
+            throw new IllegalArgumentException("");
+        };
+        map[row][column] = type;
     }
 
 }

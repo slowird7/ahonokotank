@@ -29,6 +29,7 @@ public class FXMLController implements Initializable {
 
     public static FXMLController INSTANCE;
     private static int NO_OF_TANKS = 3;
+    private static int GRID_SIZE = 20;
 
     int turn = 0;
     final int CYCLE = 2;
@@ -86,7 +87,7 @@ public class FXMLController implements Initializable {
                             Missile missile = missiles.get(i);
                             missile.fly();
 //                            if (missile.ty < 0 || missile.ty >= theBattlefield.getRows() || missile.tx < 0 || missile.tx >= theBattlefield.getColumns() || theBattlefield.getCell(missile.ty, missile.tx) == '■') {
-                            if (theBattlefield.getCell(missile.ty, missile.tx) == '■' || theBattlefield.getCell(missile.ty, missile.tx) == ) {
+                            if (theBattlefield.getCell(missile.ty, missile.tx) == '■' || theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
                                 missiles.remove(missile);
                                 missile.getOwner().inFight = false;
                                 missile.getOwner().missile = null;
@@ -147,17 +148,17 @@ public class FXMLController implements Initializable {
         theMap.getRowConstraints().clear();
         theMap.getColumnConstraints().clear();
         for (int ii = 0; ii < theBattlefield.getRows(); ii++) {
-            theMap.getRowConstraints().add(new RowConstraints(30));
+            theMap.getRowConstraints().add(new RowConstraints(GRID_SIZE));
         }
         for (int jj = 0; jj < theBattlefield.getColumns(); jj++) {
-            theMap.getColumnConstraints().add(new ColumnConstraints(30));
+            theMap.getColumnConstraints().add(new ColumnConstraints(GRID_SIZE));
         }
             cell = new Label[theBattlefield.getRows()][theBattlefield.getColumns()];
         for (int yy = 0; yy < theBattlefield.getRows(); yy++) {
             for (int xx = 0; xx < theBattlefield.getColumns(); xx++) {
                 cell[yy][xx] = new Label(String.valueOf(theBattlefield.getCell(yy ,xx)));
                 cell[yy][xx].setVisible(true);
-                cell[yy][xx].setFont(new Font("system", 28));
+                cell[yy][xx].setFont(new Font("system", GRID_SIZE));
                 cell[yy][xx].setEllipsisString("");
                 theMap.getChildren().add(cell[yy][xx]);
                 theMap.setRowIndex(cell[yy][xx], yy);

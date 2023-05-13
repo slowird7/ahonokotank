@@ -20,12 +20,14 @@ public class MovingBody {
         OPERATED,
         AUTORUN,
         DESTRUCTED,
+        EXPLODED
     }
 
     private int id;
     public BODYSTATE bodystate;
     public int tx, ty;
     public Battlefield.DIRECTION towardDir, md;
+    protected char type;
     public int size;
     public Color color;
     private static Battlefield theBattlefield = Battlefield.getInstance();
@@ -56,6 +58,8 @@ public class MovingBody {
 
     }
 
+    public char getType() { return type; }
+
     //======================================================================
     public boolean isForwardOK() {
         MovingBody newPos = new MovingBody(this);
@@ -73,7 +77,7 @@ public class MovingBody {
                 newPos.tx--;
                 break;
         }
-        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
+        return theBattlefield.isEmpty(newPos.ty, newPos.tx);
     }
 
     public boolean isBackwardOK() {
@@ -92,10 +96,12 @@ public class MovingBody {
                 newPos.tx++;
                 break;
         }
-        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
+        return theBattlefield.isEmpty(newPos.ty, newPos.tx);
     }
 
     public boolean isTurnLeftOK() {
+        return true;
+        /*
         MovingBody newPos = new MovingBody(this);
         switch (towardDir) {
             case NORTH:
@@ -111,10 +117,14 @@ public class MovingBody {
                 newPos.towardDir = Battlefield.DIRECTION.SOUTH;
                 break;
         }
-        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
+        return theBattlefield.isEmpty(newPos.ty, newPos.tx);
+
+         */
     }
 
     public boolean isTurnRightOK() {
+        return true;
+        /*
         MovingBody newPos = new MovingBody(this);
         switch (towardDir) {
             case NORTH:
@@ -130,13 +140,16 @@ public class MovingBody {
                 newPos.towardDir = Battlefield.DIRECTION.NORTH;
                 break;
         }
-        return theBattlefield.isLocateOK(newPos.ty, newPos.tx);
+        return theBattlefield.isEmpty(newPos.ty, newPos.tx);
+
+         */
     }
 
     public boolean moveForward() {
         if (!isForwardOK()) {
             return false;
         }
+        theBattlefield.clear(ty, tx);
         switch (towardDir) {
             case NORTH:
                 ty--;
@@ -151,6 +164,7 @@ public class MovingBody {
                 tx--;
                 break;
         }
+        theBattlefield.locate(ty, tx, type);
         return true;
     }
 
@@ -158,6 +172,7 @@ public class MovingBody {
         if (!isBackwardOK()) {
             return false;
         }
+        theBattlefield.clear(ty, tx);
         switch (towardDir) {
             case NORTH:
                 ty++;
@@ -172,6 +187,7 @@ public class MovingBody {
                 tx++;
                 break;
         }
+        theBattlefield.locate(ty, tx, type);
         return true;
     }
 

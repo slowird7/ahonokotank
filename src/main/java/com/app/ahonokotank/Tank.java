@@ -44,12 +44,13 @@ public class Tank extends MovingBody {
         super(id, state, TANK_SIZE);
 //        this.missile = new Missile();
         color = colors[id % 7];
+        type = 'T';
     }
 
     void initLocation() {
         random = new Random();
         towardDir = Battlefield.DIRECTION.NORTH;
-        while (!theBattlefield.isLocateOK(ty, tx)) {
+        while (!theBattlefield.isEmpty(ty, tx)) {
             tx = random.nextInt(theBattlefield.getColumns());
             ty = random.nextInt(theBattlefield.getRows());
             switch (random.nextInt(3)) {
@@ -67,6 +68,7 @@ public class Tank extends MovingBody {
                     break;
             }
         }
+        theBattlefield.locate(ty, tx, getType());
     }
 
     boolean isKeyPressed(short key) {

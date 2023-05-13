@@ -6,7 +6,7 @@ import java.util.List;
 public class Missile extends MovingBody {
 
     public static List<Missile> missiles = new ArrayList<>();
-
+    private static Battlefield theBattlefield = Battlefield.getInstance();
     private Tank owner;
     private final int SPEED = 1;
 
@@ -17,6 +17,7 @@ public class Missile extends MovingBody {
         color = owner.color;
         tx = owner.tx;
         ty = owner.ty;
+        type = 'M';
 //        switch (towardDir) {
 //            case NORTH -> { tx = owner.tx; ty = owner.ty - 2; }
 //            case EAST  -> { tx = owner.tx + 2; ty = owner.ty; }
@@ -38,6 +39,9 @@ public class Missile extends MovingBody {
             case SOUTH -> { ty = ty + SPEED; }
             case WEST  -> { tx = tx - SPEED; }
             default    -> { throw new IllegalArgumentException("Unknown direction"); }
+        }
+        if (theBattlefield.getCell(ty, tx) == '■') {
+            bodystate = BODYSTATE.EXPLODED;
         }
     }
 
