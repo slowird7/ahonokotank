@@ -107,6 +107,16 @@ public class Battlefield {
         cell[row][column] = '　';
     }
 
+    public void clearAll() {
+        for (int row = 0; row < noOfRows; row ++) {
+            for (int column = 0; column < noOfColumns; column++) {
+                if (cell[row][column] != '■') {
+                    cell[row][column] = '　';
+                }
+            }
+        }
+    }
+
     public void locate(int row, int column, char type) throws IllegalArgumentException {
         if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns) {
             throw new IllegalArgumentException("");

@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane id="AnchorPane" prefHeight="562.0" prefWidth="655.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.app.ahonokotank.FXMLController">
+<AnchorPane id="AnchorPane" prefHeight="562.0" prefWidth="655.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.app.ahonokotank.FXMLController">
     <children>
         <Button fx:id="btnRun" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#onBtnStart" text="start" />
         <GridPane fx:id="theMap" alignment="CENTER" layoutX="33.0" layoutY="64.0" prefHeight="0.0" prefWidth="0.0">

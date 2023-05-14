@@ -7,11 +7,14 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
@@ -22,8 +25,9 @@ import static com.app.ahonokotank.Missile.MISSILESTATE.EXPLODE;
 import static com.app.ahonokotank.Missile.MISSILESTATE.FLY;
 import static com.app.ahonokotank.Missile.missiles;
 import static com.app.ahonokotank.MovingBody.BODYSTATE.EXPLODED;
-import static com.app.ahonokotank.Tank.TANKSTATE.DESTROYED;
+import static com.app.ahonokotank.Tank.TANKSTATE.*;
 import static com.app.ahonokotank.Tank.tanks;
+import static java.lang.Thread.sleep;
 
 public class FXMLController implements Initializable {
 
@@ -48,15 +52,41 @@ public class FXMLController implements Initializable {
 
     private Battlefield theBattlefield;
 
+    public void clearAll() {
+        for (int row = 0; row < theMap.getRowCount(); row ++) {
+            for (int column = 0; column < theMap.getColumnCount(); column++) {
+                if (!cell[row][column].getText().equals("■")) {
+                    cell[row][column].setText("　");
+                }
+            }
+        }
+    }
+
     @FXML
     private void onBtnStart(ActionEvent event) {
         if (!isRunning.get()) {
             turn = 0;
             btnRun.setText("stop");
+            theMap.requestFocus();
+            theBattlefield.clearAll();
+            clearAll();
             for (Tank tank : tanks) {
+                tank.state = AUTORUN;
                 tank.initLocation();
                 FXMLPlotTank(tank);
             }
+            tanks.get(0).state = OPERATED;
+
+//            for (int c = 0; c < 5; c++) {
+//                try {
+//                    FXMLhideMovingBody(tanks.get(0));
+//                    sleep(300);
+//                    FXMLPlotTank(tanks.get(0));
+//                    sleep(300);
+//                } catch (InterruptedException ex) {
+//                    // do nothing.
+//                }
+//            }
 
             timer = new Timer(false);
             TimerTask task = new TimerTask() {
@@ -99,7 +129,7 @@ public class FXMLController implements Initializable {
                                     missile.state = EXPLODE;
                                     if (theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
                                         for (Tank tank : tanks) {
-                                            if (tank.ty == missile.ty && tank.tx == missile.tx) {
+                                            if (tank.state != DESTROYED && tank.ty == missile.ty && tank.tx == missile.tx) {
                                                 tank.state = DESTROYED;
                                                 if (tank.getId() == 0) {
                                                     new Alert(Alert.AlertType.INFORMATION, "You are destryed.").show();
@@ -125,7 +155,7 @@ public class FXMLController implements Initializable {
                 }
             };
 
-            timer.scheduleAtFixedRate(task, 0, 100);
+            timer.scheduleAtFixedRate(task, 3000, 100);
         } else {
             timer.cancel();
             btnRun.setText("start");
@@ -151,6 +181,14 @@ public class FXMLController implements Initializable {
                     timer.cancel();
                 }
             });
+        });
+        btnRun.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.SPACE) {
+                    event.consume(); // Prevents the button from receiving the SPACE key
+                }
+            }
         });
     }
 

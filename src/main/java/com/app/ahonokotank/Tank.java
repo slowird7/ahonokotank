@@ -54,26 +54,30 @@ public class Tank extends MovingBody {
 
     void initLocation() {
         random = new Random();
-        towardDir = Battlefield.DIRECTION.NORTH;
+        locateRandom();
         while (!theBattlefield.isEmpty(ty, tx)) {
-            tx = random.nextInt(theBattlefield.getNoOfColumns());
-            ty = random.nextInt(theBattlefield.getNoOfRows());
-            switch (random.nextInt(3)) {
-                case 0:
-                    towardDir = Battlefield.DIRECTION.NORTH;
-                    break;
-                case 1:
-                    towardDir = Battlefield.DIRECTION.EAST;
-                    break;
-                case 2:
-                    towardDir = Battlefield.DIRECTION.SOUTH;
-                    break;
-                case 3:
-                    towardDir = Battlefield.DIRECTION.WEST;
-                    break;
-            }
+            locateRandom();
         }
         theBattlefield.locate(ty, tx, getType());
+    }
+
+    private void locateRandom() {
+        tx = random.nextInt(theBattlefield.getNoOfColumns());
+        ty = random.nextInt(theBattlefield.getNoOfRows());
+        switch (random.nextInt(3)) {
+            case 0:
+                towardDir = Battlefield.DIRECTION.NORTH;
+                break;
+            case 1:
+                towardDir = Battlefield.DIRECTION.EAST;
+                break;
+            case 2:
+                towardDir = Battlefield.DIRECTION.SOUTH;
+                break;
+            case 3:
+                towardDir = Battlefield.DIRECTION.WEST;
+                break;
+        }
     }
 
     boolean isKeyPressed(short key) {
@@ -111,7 +115,11 @@ public class Tank extends MovingBody {
     }
 
     public void maneuver() {
-        if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
+        if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_SPACE)) & 0x8000) == 0x8000) {
+            if (!inFight) {
+                launchMissile();
+            }
+        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
             switch (towardDir) {
                 case NORTH -> moveForward();
                 case EAST  -> turnLeft();
@@ -140,6 +148,7 @@ public class Tank extends MovingBody {
                 case WEST  -> moveBackward();
             }
         }
+        theBattlefield.locate(ty, tx, type);
     }
 
     private void launchMissile() {
