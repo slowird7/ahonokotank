@@ -1,9 +1,5 @@
 package com.app.ahonokotank;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -13,22 +9,25 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import static com.app.ahonokotank.Missile.MISSILESTATE.EXPLODE;
+import static com.app.ahonokotank.Missile.MISSILESTATE.FLY;
 import static com.app.ahonokotank.Missile.missiles;
+import static com.app.ahonokotank.MovingBody.BODYSTATE.EXPLODED;
+import static com.app.ahonokotank.Tank.TANKSTATE.DESTROYED;
 import static com.app.ahonokotank.Tank.tanks;
 
 public class FXMLController implements Initializable {
 
     public static FXMLController INSTANCE;
-    private static int NO_OF_TANKS = 3;
+    private static int NO_OF_TANKS = 20;
     private static int GRID_SIZE = 20;
 
     int turn = 0;
@@ -65,32 +64,52 @@ public class FXMLController implements Initializable {
                     if (turn == 0) {
                         Platform.runLater(() -> {
                             for (Tank tank : tanks) {
-                                FXMLhideMovingBody(tank);
+                                if (tank.state == Tank.TANKSTATE.AUTORUN) {
+                                    FXMLhideMovingBody(tank);
+                                }
                             }
 
                             for (Tank tank : tanks) {
-                                if (tank.bodystate == MovingBody.BODYSTATE.AUTORUN) {
+                                if (tank.state == Tank.TANKSTATE.AUTORUN) {
                                     tank.autoRun();
-                                } else if (tank.bodystate == MovingBody.BODYSTATE.OPERATED) {
+                                } else if (tank.state == Tank.TANKSTATE.OPERATED) {
                                     tank.maneuver();
                                 }
                                 FXMLController.INSTANCE.FXMLPlotTank(tank);
+                            }
+
+                            for (Tank tank : tanks) {
+                                FXMLPlotTank(tank);
                             }
                         });
                     }
 
                     Platform.runLater(() -> {
                         for (Missile missile : missiles) {
-                            FXMLhideMovingBody(missile);
+                            if (missile.state == FLY) {
+                                FXMLhideMovingBody(missile);
+                            }
                         }
                         for (int i = 0; i < missiles.size(); i++) {
                             Missile missile = missiles.get(i);
-                            missile.fly();
-//                            if (missile.ty < 0 || missile.ty >= theBattlefield.getRows() || missile.tx < 0 || missile.tx >= theBattlefield.getColumns() || theBattlefield.getCell(missile.ty, missile.tx) == '■') {
-                            if (theBattlefield.getCell(missile.ty, missile.tx) == '■' || theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
+                            if (missile.state == FLY) {
+                                missile.fly();
+                                if (theBattlefield.getCell(missile.ty, missile.tx) == '■' || theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
+                                    missile.state = EXPLODE;
+                                    if (theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
+                                        for (Tank tank : tanks) {
+                                            if (tank.ty == missile.ty && tank.tx == missile.tx) {
+                                                tank.state = DESTROYED;
+                                            }
+                                         }
+                                    }
+                                }
+                            } else if (missile.state == EXPLODE) {
+                                missile.state = Missile.MISSILESTATE.EXPLODED;
+                            } else if (missile.state == Missile.MISSILESTATE.EXPLODED) {
                                 missiles.remove(missile);
-                                missile.getOwner().inFight = false;
                                 missile.getOwner().missile = null;
+                                missile.getOwner().inFight = false;
                             }
                         }
                         for (Missile missile : missiles) {
@@ -98,19 +117,11 @@ public class FXMLController implements Initializable {
                         }
                     });
 
-                    if (turn == 0) {
-                        Platform.runLater(() -> {
-                            for (Tank tank : tanks) {
-                                FXMLPlotTank(tank);
-                            }
-                        });
-                    }
-
                     turn = (turn + 1) % CYCLE;
                 }
             };
 
-            timer.scheduleAtFixedRate(task, 0, 200);
+            timer.scheduleAtFixedRate(task, 0, 100);
         } else {
             timer.cancel();
             btnRun.setText("start");
@@ -123,10 +134,10 @@ public class FXMLController implements Initializable {
         theBattlefield = Battlefield.getInstance();
         loadMap("map.txt");
         // 自機生成
-        tanks.add(new Tank(0, MovingBody.BODYSTATE.OPERATED));
+        tanks.add(new Tank(0, Tank.TANKSTATE.OPERATED));
         // NPC生成
         for (int id = 1; id < NO_OF_TANKS; id++) {
-            tanks.add(new Tank(id, MovingBody.BODYSTATE.AUTORUN));
+            tanks.add(new Tank(id, Tank.TANKSTATE.AUTORUN));
         }
         INSTANCE = this;
         isRunning = new SimpleBooleanProperty(false);
@@ -147,15 +158,15 @@ public class FXMLController implements Initializable {
         theBattlefield.loadMap(mapName);
         theMap.getRowConstraints().clear();
         theMap.getColumnConstraints().clear();
-        for (int ii = 0; ii < theBattlefield.getRows(); ii++) {
+        for (int ii = 0; ii < theBattlefield.getNoOfRows(); ii++) {
             theMap.getRowConstraints().add(new RowConstraints(GRID_SIZE));
         }
-        for (int jj = 0; jj < theBattlefield.getColumns(); jj++) {
+        for (int jj = 0; jj < theBattlefield.getNoOfColumns(); jj++) {
             theMap.getColumnConstraints().add(new ColumnConstraints(GRID_SIZE));
         }
-            cell = new Label[theBattlefield.getRows()][theBattlefield.getColumns()];
-        for (int yy = 0; yy < theBattlefield.getRows(); yy++) {
-            for (int xx = 0; xx < theBattlefield.getColumns(); xx++) {
+            cell = new Label[theBattlefield.getNoOfRows()][theBattlefield.getNoOfColumns()];
+        for (int yy = 0; yy < theBattlefield.getNoOfRows(); yy++) {
+            for (int xx = 0; xx < theBattlefield.getNoOfColumns(); xx++) {
                 cell[yy][xx] = new Label(String.valueOf(theBattlefield.getCell(yy ,xx)));
                 cell[yy][xx].setVisible(true);
                 cell[yy][xx].setFont(new Font("system", GRID_SIZE));
@@ -207,28 +218,40 @@ public class FXMLController implements Initializable {
             default:
                 throw new IllegalArgumentException("unknown direction:" + tank.towardDir);
         }
-        cell[tank.ty][tank.tx].setTextFill(tank.color);
+        if (tank.state == DESTROYED) {
+            cell[tank.ty][tank.tx].setTextFill(Color.GRAY);
+        } else {
+            cell[tank.ty][tank.tx].setTextFill(tank.color);
+        }
     }
 
     public void FXMLPlotMissile(Missile missile) throws IllegalArgumentException {
 //        cell[tank.ty][tank.tx].setText("〇");
-        switch (missile.getOwner().towardDir) {
-            case NORTH:
-                cell[missile.ty][missile.tx].setText("↑");
-                break;
-            case EAST:
-                cell[missile.ty][missile.tx].setText("→");
-                break;
-            case SOUTH:
-                cell[missile.ty][missile.tx].setText("↓");
-                break;
-            case WEST:
-                cell[missile.ty][missile.tx].setText("←");
-                break;
-            default:
-                throw new IllegalArgumentException("unknown direction:" + missile.towardDir);
+        if (missile.state == EXPLODE) {
+            cell[missile.ty][missile.tx].setText("※");
+            cell[missile.ty][missile.tx].setTextFill(missile.color);
+        } else if (missile.state == Missile.MISSILESTATE.EXPLODED) {
+            cell[missile.ty][missile.tx].setText(String.valueOf(theBattlefield.getCell(missile.ty, missile.tx)));
+            cell[missile.ty][missile.tx].setTextFill(Color.BLACK);
+        } else if (missile.state == FLY) {
+            switch (missile.getOwner().towardDir) {
+                case NORTH:
+                    cell[missile.ty][missile.tx].setText("↑");
+                    break;
+                case EAST:
+                    cell[missile.ty][missile.tx].setText("→");
+                    break;
+                case SOUTH:
+                    cell[missile.ty][missile.tx].setText("↓");
+                    break;
+                case WEST:
+                    cell[missile.ty][missile.tx].setText("←");
+                    break;
+                default:
+                    throw new IllegalArgumentException("unknown direction:" + missile.towardDir);
+            }
+            cell[missile.ty][missile.tx].setTextFill(missile.color);
         }
-        cell[missile.ty][missile.tx].setTextFill(missile.color);
     }
 
 

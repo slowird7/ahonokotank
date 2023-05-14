@@ -5,6 +5,7 @@
  */
 package com.app.ahonokotank;
 
+import javafx.scene.control.skin.TextAreaSkin;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class Tank extends MovingBody {
     public enum TANKSTATE {
         OPERATED,
         AUTORUN,
-        DESTRUCTED,
+        DESTROYED,
     }
 
     static final int TANK_SIZE = 1;
@@ -40,19 +41,20 @@ public class Tank extends MovingBody {
 
     static final Color colors[] = {Color.RED, Color.GREEN, Color.BLUE, Color.VIOLET, Color.YELLOW, Color.INDIGO, Color.ORANGE};
 
-    public Tank(int id, BODYSTATE state) {
-        super(id, state, TANK_SIZE);
+    public Tank(int id, TANKSTATE state) {
+        super(id, TANK_SIZE);
 //        this.missile = new Missile();
-        color = colors[id % 7];
-        type = 'T';
+        this.color = colors[id % 7];
+        this.type = 'T';
+        this.state = state;
     }
 
     void initLocation() {
         random = new Random();
         towardDir = Battlefield.DIRECTION.NORTH;
         while (!theBattlefield.isEmpty(ty, tx)) {
-            tx = random.nextInt(theBattlefield.getColumns());
-            ty = random.nextInt(theBattlefield.getRows());
+            tx = random.nextInt(theBattlefield.getNoOfColumns());
+            ty = random.nextInt(theBattlefield.getNoOfRows());
             switch (random.nextInt(3)) {
                 case 0:
                     towardDir = Battlefield.DIRECTION.NORTH;

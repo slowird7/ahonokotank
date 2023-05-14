@@ -56,27 +56,27 @@ public class Battlefield {
 
     }
 
-    private int columns = 0, rows = 0;
-    private char map[][];
+    private int noOfColumns = 0, noOfRows = 0;
+    private char cell[][];
 
     private static Battlefield INSTANCE = new Battlefield();
 
     public static Battlefield getInstance() { return INSTANCE; }
-    public int getColumns() { return columns; }
-    public int getRows() { return rows; }
+    public int getNoOfColumns() { return noOfColumns; }
+    public int getNoOfRows() { return noOfRows; }
 
-    public char getCell(int row, int column) { return map[row][column]; }
+    public char getCell(int row, int column) { return cell[row][column]; }
     public void loadMap(String mapName) {
         File file = new File(mapName);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                rows++;
-                if (columns < line.length()) {
-                    columns = line.length();
+                noOfRows++;
+                if (noOfColumns < line.length()) {
+                    noOfColumns = line.length();
                 }
             }
-            map = new char[rows][columns];
+            cell = new char[noOfRows][noOfColumns];
         } catch (IOException ex) {
             new Alert(Alert.AlertType.WARNING, "map file not found. [" + mapName + "]", ButtonType.OK).showAndWait();
         }
@@ -85,7 +85,7 @@ public class Battlefield {
             int yy = 0;
             while ((line = br.readLine()) != null) {
                 for (int xx = 0; xx < line.length(); xx++) {
-                    map[yy][xx] = line.charAt(xx);
+                    cell[yy][xx] = line.charAt(xx);
                 }
                 yy++;
             }
@@ -96,22 +96,27 @@ public class Battlefield {
     }
 
     public boolean isEmpty(int row, int column) throws IllegalArgumentException {
-        if (row < 0 || row >= rows || column < 0 || column >= columns) return false;
+        if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns) return false;
         return (getCell(row, column) == '　');
     }
 
     public void clear(int row, int column) throws IllegalArgumentException {
-        if (row < 0 || row >= rows || column < 0 || column >= columns || map[row][column] == '　') {
+        if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns || cell[row][column] == '　') {
             throw new IllegalArgumentException("");
         };
-        map[row][column] = '　';
+        cell[row][column] = '　';
     }
 
     public void locate(int row, int column, char type) throws IllegalArgumentException {
-        if (row < 0 || row >= rows || column < 0 || column >= columns || map[row][column] != '　') {
+        if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns) {
             throw new IllegalArgumentException("");
         };
-        map[row][column] = type;
+        if (isEmpty(column, row)) {
+            cell[row][column] = type;
+        } else {
+            cell[row][column] = '3';
+
+        }
     }
 
 }

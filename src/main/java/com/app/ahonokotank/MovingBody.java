@@ -17,8 +17,8 @@ import static com.app.ahonokotank.User32.INSTANCE;
 public class MovingBody {
 
     public enum BODYSTATE {
-        OPERATED,
-        AUTORUN,
+        ALIVE,
+        DEAD,
         DESTRUCTED,
         EXPLODED
     }
@@ -33,10 +33,10 @@ public class MovingBody {
     private static Battlefield theBattlefield = Battlefield.getInstance();
 
 
-    public MovingBody(int id, BODYSTATE bodystate, int size) {
+    public MovingBody(int id, int size) {
         this.id = id;
-        this.bodystate = bodystate;
         this.size = size;
+        this.bodystate = BODYSTATE.ALIVE;
         this.towardDir = UNDEF;
     }
 
