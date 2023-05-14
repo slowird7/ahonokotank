@@ -32,7 +32,7 @@ import static java.lang.Thread.sleep;
 public class FXMLController implements Initializable {
 
     public static FXMLController INSTANCE;
-    private static int NO_OF_TANKS = 20;
+    private static int NO_OF_TANKS = 2;
     private static int GRID_SIZE = 20;
 
     int turn = 0;
@@ -77,17 +77,6 @@ public class FXMLController implements Initializable {
             }
             tanks.get(0).state = OPERATED;
 
-//            for (int c = 0; c < 5; c++) {
-//                try {
-//                    FXMLhideMovingBody(tanks.get(0));
-//                    sleep(300);
-//                    FXMLPlotTank(tanks.get(0));
-//                    sleep(300);
-//                } catch (InterruptedException ex) {
-//                    // do nothing.
-//                }
-//            }
-
             timer = new Timer(false);
             TimerTask task = new TimerTask() {
                 @Override
@@ -101,33 +90,23 @@ public class FXMLController implements Initializable {
                             }
 
                             for (Tank tank : tanks) {
-                                if (tank.state == Tank.TANKSTATE.AUTORUN) {
-                                    tank.autoRun();
-                                } else if (tank.state == Tank.TANKSTATE.OPERATED) {
-                                    tank.maneuver();
-                                }
+                                tank.play();
                                 FXMLController.INSTANCE.FXMLPlotTank(tank);
-                            }
-
-                            for (Tank tank : tanks) {
-                                FXMLPlotTank(tank);
                             }
                         });
                     }
 
                     Platform.runLater(() -> {
                         for (Missile missile : missiles) {
-                            if (missile.state == FLY) {
-                                FXMLhideMovingBody(missile);
-                            }
                         }
                         for (int i = 0; i < missiles.size(); i++) {
                             Missile missile = missiles.get(i);
                             if (missile.state == FLY) {
+                                FXMLhideMovingBody(missile);
                                 missile.fly();
-                                if (theBattlefield.getCell(missile.ty, missile.tx) == '■' || theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
+                                if (theBattlefield.getCell(missile.ty, missile.tx).getType() == 'W' || theBattlefield.getCell(missile.ty, missile.tx).getType() == 'T') {
                                     missile.state = EXPLODE;
-                                    if (theBattlefield.getCell(missile.ty, missile.tx) == 'T') {
+                                    if (theBattlefield.getCell(missile.ty, missile.tx).getType() == 'T') {
                                         for (Tank tank : tanks) {
                                             if (tank.state != DESTROYED && tank.ty == missile.ty && tank.tx == missile.tx) {
                                                 tank.state = DESTROYED;
@@ -209,7 +188,10 @@ public class FXMLController implements Initializable {
             cell = new Label[theBattlefield.getNoOfRows()][theBattlefield.getNoOfColumns()];
         for (int yy = 0; yy < theBattlefield.getNoOfRows(); yy++) {
             for (int xx = 0; xx < theBattlefield.getNoOfColumns(); xx++) {
-                cell[yy][xx] = new Label(String.valueOf(theBattlefield.getCell(yy ,xx)));
+                switch (theBattlefield.getCell(yy ,xx).getType()) {
+                    case 'W' -> cell[yy][xx] = new Label("■");
+                    case 'S' -> cell[yy][xx] = new Label("　");
+                }
                 cell[yy][xx].setVisible(true);
                 cell[yy][xx].setFont(new Font("system", GRID_SIZE));
                 cell[yy][xx].setEllipsisString("");
@@ -273,7 +255,7 @@ public class FXMLController implements Initializable {
             cell[missile.ty][missile.tx].setText("※");
             cell[missile.ty][missile.tx].setTextFill(missile.color);
         } else if (missile.state == Missile.MISSILESTATE.EXPLODED) {
-            cell[missile.ty][missile.tx].setText(String.valueOf(theBattlefield.getCell(missile.ty, missile.tx)));
+            cell[missile.ty][missile.tx].setText(theBattlefield.getCell(missile.ty, missile.tx).getType() == 'W' ? "■" : "　");
             cell[missile.ty][missile.tx].setTextFill(Color.BLACK);
         } else if (missile.state == FLY) {
             switch (missile.getOwner().towardDir) {

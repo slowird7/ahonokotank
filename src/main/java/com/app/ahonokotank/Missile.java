@@ -21,11 +21,10 @@ public class Missile extends MovingBody {
     public MISSILESTATE state;
 
     public Missile(Tank owner) {
-        super(0, 1);
+        super(0, 1, 'M');
         this.owner = owner;
         this.towardDir = owner.towardDir;
         this.color = owner.color;
-        this.type = 'M';
         this.state = MISSILESTATE.FLY;
         this.tx = owner.tx;
         this.ty = owner.ty;
@@ -37,7 +36,7 @@ public class Missile extends MovingBody {
 //            default    -> { throw new IllegalArgumentException("Unknown direction"); }
 //        }
         missiles.add(this);
-        theBattlefield.locate(ty, tx,  getType());
+//        theBattlefield.locate(ty, tx,  this);
     }
 
     public Tank getOwner() {

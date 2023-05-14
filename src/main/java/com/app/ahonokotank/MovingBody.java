@@ -27,17 +27,18 @@ public class MovingBody {
     public BODYSTATE bodystate;
     public int tx, ty;
     public Battlefield.DIRECTION towardDir, md;
-    protected char type;
+    private char type;
     public int size;
     public Color color;
     private static Battlefield theBattlefield = Battlefield.getInstance();
 
 
-    public MovingBody(int id, int size) {
+    public MovingBody(int id, int size, char type) {
         this.id = id;
         this.size = size;
         this.bodystate = BODYSTATE.ALIVE;
         this.towardDir = UNDEF;
+        this.type = type;
     }
 
     public MovingBody(MovingBody movingBody) {
@@ -45,6 +46,7 @@ public class MovingBody {
         this.ty = movingBody.ty;
         this.size = movingBody.size;
         this.towardDir = movingBody.towardDir;
+        this.type = movingBody.type;
     }
 
     public int getId() {
@@ -81,7 +83,7 @@ public class MovingBody {
                 newPos.tx--;
                 break;
         }
-        return theBattlefield.isEmpty(newPos.ty, newPos.tx);
+        return !theBattlefield.isOccupied(newPos.ty, newPos.tx);
     }
 
     public boolean isBackwardOK() {
@@ -100,7 +102,7 @@ public class MovingBody {
                 newPos.tx++;
                 break;
         }
-        return theBattlefield.isEmpty(newPos.ty, newPos.tx);
+        return !theBattlefield.isOccupied(newPos.ty, newPos.tx);
     }
 
     public boolean isTurnLeftOK() {
@@ -168,7 +170,7 @@ public class MovingBody {
                 tx--;
                 break;
         }
-        theBattlefield.locate(ty, tx, type);
+        theBattlefield.locate(ty, tx, this);
         return true;
     }
 
@@ -191,7 +193,7 @@ public class MovingBody {
                 tx++;
                 break;
         }
-        theBattlefield.locate(ty, tx, type);
+        theBattlefield.locate(ty, tx, this);
         return true;
     }
 

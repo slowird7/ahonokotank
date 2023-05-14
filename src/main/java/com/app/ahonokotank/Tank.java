@@ -5,14 +5,11 @@
  */
 package com.app.ahonokotank;
 
-import javafx.scene.control.skin.TextAreaSkin;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import static com.app.ahonokotank.User32.INSTANCE;
 
 /**
  *
@@ -41,24 +38,23 @@ public class Tank extends MovingBody {
     static final Color colors[] = {Color.RED, Color.GREEN, Color.BLUE, Color.VIOLET, Color.YELLOW, Color.INDIGO, Color.ORANGE, Color.BLUEVIOLET};
 
     public Tank(int id, TANKSTATE state) {
-        super(id, TANK_SIZE);
+        super(id, TANK_SIZE, 'T');
 //        this.missile = new Missile();
         if (state == TANKSTATE.OPERATED) {
             this.color = colors[0];
         } else {
             this.color = colors[id % 7 + 1];
         }
-        this.type = 'T';
         this.state = state;
     }
 
     void initLocation() {
         random = new Random();
         locateRandom();
-        while (!theBattlefield.isEmpty(ty, tx)) {
+        while (theBattlefield.isOccupied(ty, tx)) {
             locateRandom();
         }
-        theBattlefield.locate(ty, tx, getType());
+        theBattlefield.locate(ty, tx, this);
     }
 
     private void locateRandom() {
@@ -78,16 +74,6 @@ public class Tank extends MovingBody {
                 towardDir = Battlefield.DIRECTION.WEST;
                 break;
         }
-    }
-
-    boolean isKeyPressed(short key) {
-        return (INSTANCE.GetKeyState(key) & 0x8000) == 0x8000;
-    }
-
-    ;
-
-    public void clear() {
-
     }
 
     void autoRun() {
@@ -148,11 +134,19 @@ public class Tank extends MovingBody {
                 case WEST  -> moveBackward();
             }
         }
-        theBattlefield.locate(ty, tx, type);
+        theBattlefield.locate(ty, tx, this);
     }
 
     private void launchMissile() {
         inFight = true;
         missile = new Missile(this);
+    }
+
+    public void play() {
+        if (state == TANKSTATE.AUTORUN) {
+            autoRun();
+        } else if (state == TANKSTATE.OPERATED) {
+            maneuver();
+        }
     }
 }

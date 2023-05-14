@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import static com.app.ahonokotank.Space.theSpace;
+import static com.app.ahonokotank.Wall.theWall;
+
 public class Battlefield {
     public enum DIRECTION {
         UNDEF(0),
@@ -57,7 +60,7 @@ public class Battlefield {
     }
 
     private int noOfColumns = 0, noOfRows = 0;
-    private char cell[][];
+    private MovingBody cell[][];
 
     private static Battlefield INSTANCE = new Battlefield();
 
@@ -65,7 +68,7 @@ public class Battlefield {
     public int getNoOfColumns() { return noOfColumns; }
     public int getNoOfRows() { return noOfRows; }
 
-    public char getCell(int row, int column) { return cell[row][column]; }
+    public MovingBody getCell(int row, int column) { return cell[row][column]; }
     public void loadMap(String mapName) {
         File file = new File(mapName);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -76,7 +79,7 @@ public class Battlefield {
                     noOfColumns = line.length();
                 }
             }
-            cell = new char[noOfRows][noOfColumns];
+            cell = new MovingBody[noOfRows][noOfColumns];
         } catch (IOException ex) {
             new Alert(Alert.AlertType.WARNING, "map file not found. [" + mapName + "]", ButtonType.OK).showAndWait();
         }
@@ -85,7 +88,11 @@ public class Battlefield {
             int yy = 0;
             while ((line = br.readLine()) != null) {
                 for (int xx = 0; xx < line.length(); xx++) {
-                    cell[yy][xx] = line.charAt(xx);
+                    switch (line.charAt(xx)) {
+                        case '■' -> cell[yy][xx] = theWall;
+                        case '　' -> cell[yy][xx] = theSpace;
+                        default -> throw new IllegalArgumentException("Unknown map element");
+                    }
                 }
                 yy++;
             }
@@ -95,37 +102,37 @@ public class Battlefield {
         }
     }
 
-    public boolean isEmpty(int row, int column) throws IllegalArgumentException {
+    public boolean isOccupied(int row, int column) throws IllegalArgumentException {
         if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns) return false;
-        return (getCell(row, column) == '　');
+        return (getCell(row, column) != theSpace);
     }
 
     public void clear(int row, int column) throws IllegalArgumentException {
-        if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns || cell[row][column] == '　') {
+        if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns || cell[row][column] == theSpace) {
             throw new IllegalArgumentException("");
         };
-        cell[row][column] = '　';
+        cell[row][column] = theSpace;
     }
 
     public void clearAll() {
         for (int row = 0; row < noOfRows; row ++) {
             for (int column = 0; column < noOfColumns; column++) {
-                if (cell[row][column] != '■') {
-                    cell[row][column] = '　';
+                if (cell[row][column].getType() != 'W') {
+                    cell[row][column] = theSpace;
                 }
             }
         }
     }
 
-    public void locate(int row, int column, char type) throws IllegalArgumentException {
+    public void locate(int row, int column, MovingBody mb) throws IllegalArgumentException {
         if (row < 0 || row >= noOfRows || column < 0 || column >= noOfColumns) {
             throw new IllegalArgumentException("");
         };
-        if (isEmpty(column, row)) {
-            cell[row][column] = type;
+        if (cell[row][column] == mb) return;
+        if (!isOccupied(row, column) || mb.getType() == 'M') {
+            cell[row][column] = mb;
         } else {
-            cell[row][column] = '3';
-
+            throw new IllegalArgumentException("is occupied");
         }
     }
 
