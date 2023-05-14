@@ -47,6 +47,10 @@ public class MovingBody {
         this.towardDir = movingBody.towardDir;
     }
 
+    public int getId() {
+        return id;
+    }
+
 
     boolean isKeyPressed(short key) {
         return (INSTANCE.GetKeyState(key) & 0x8000) == 0x8000;
@@ -233,15 +237,4 @@ public class MovingBody {
         return true;
     }
 
-    public void maneuver() {
-        if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
-            moveForward();
-        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_DOWN)) & 0x8000) == 0x8000) {
-            moveBackward();
-        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_LEFT)) & 0x8000) == 0x8000) {
-            turnLeft();
-        } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_RIGHT)) & 0x8000) == 0x8000) {
-            turnRight();
-        }
-    }
 }

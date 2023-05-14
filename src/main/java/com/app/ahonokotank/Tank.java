@@ -29,8 +29,7 @@ public class Tank extends MovingBody {
     }
 
     static final int TANK_SIZE = 1;
-    private int id;
-    public TANKSTATE state; 
+    public TANKSTATE state;
     public boolean inFight = false;
     private Random random;
 
@@ -39,12 +38,16 @@ public class Tank extends MovingBody {
     private static Battlefield theBattlefield = Battlefield.getInstance();
 
 
-    static final Color colors[] = {Color.RED, Color.GREEN, Color.BLUE, Color.VIOLET, Color.YELLOW, Color.INDIGO, Color.ORANGE};
+    static final Color colors[] = {Color.RED, Color.GREEN, Color.BLUE, Color.VIOLET, Color.YELLOW, Color.INDIGO, Color.ORANGE, Color.BLUEVIOLET};
 
     public Tank(int id, TANKSTATE state) {
         super(id, TANK_SIZE);
 //        this.missile = new Missile();
-        this.color = colors[id % 7];
+        if (state == TANKSTATE.OPERATED) {
+            this.color = colors[0];
+        } else {
+            this.color = colors[id % 7 + 1];
+        }
         this.type = 'T';
         this.state = state;
     }
@@ -107,15 +110,35 @@ public class Tank extends MovingBody {
         }
     }
 
-    public void operate() {
+    public void maneuver() {
         if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_UP)) & 0x8000) == 0x8000) {
-            moveForward();
+            switch (towardDir) {
+                case NORTH -> moveForward();
+                case EAST  -> turnLeft();
+                case SOUTH -> moveBackward();
+                case WEST  -> turnRight();
+            }
         } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_DOWN)) & 0x8000) == 0x8000) {
-            moveBackward();
+            switch (towardDir) {
+                case NORTH -> moveBackward();
+                case EAST  -> turnRight();
+                case SOUTH -> moveForward();
+                case WEST  -> turnLeft();
+            }
         } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_LEFT)) & 0x8000) == 0x8000) {
-            turnLeft();
+            switch (towardDir) {
+                case NORTH -> turnLeft();
+                case EAST  -> moveBackward();
+                case SOUTH -> turnRight();
+                case WEST  -> moveForward();
+            }
         } else if (((User32.INSTANCE.GetKeyState((short) java.awt.event.KeyEvent.VK_RIGHT)) & 0x8000) == 0x8000) {
-            turnRight();
+            switch (towardDir) {
+                case NORTH -> turnRight();
+                case EAST  -> moveForward();
+                case SOUTH -> turnLeft();
+                case WEST  -> moveBackward();
+            }
         }
     }
 

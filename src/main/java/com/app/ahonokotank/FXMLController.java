@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
@@ -64,7 +65,7 @@ public class FXMLController implements Initializable {
                     if (turn == 0) {
                         Platform.runLater(() -> {
                             for (Tank tank : tanks) {
-                                if (tank.state == Tank.TANKSTATE.AUTORUN) {
+                                if (tank.state == Tank.TANKSTATE.AUTORUN || tank.state == Tank.TANKSTATE.OPERATED) {
                                     FXMLhideMovingBody(tank);
                                 }
                             }
@@ -100,6 +101,9 @@ public class FXMLController implements Initializable {
                                         for (Tank tank : tanks) {
                                             if (tank.ty == missile.ty && tank.tx == missile.tx) {
                                                 tank.state = DESTROYED;
+                                                if (tank.getId() == 0) {
+                                                    new Alert(Alert.AlertType.INFORMATION, "You are destryed.").show();
+                                                }
                                             }
                                          }
                                     }
